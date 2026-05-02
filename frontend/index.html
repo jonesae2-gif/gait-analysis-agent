@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GaitMind — Cognitive-Learning Gait-Analysis Agent</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <nav class="nav">
+    <a class="nav__brand" href="index.html">
+      <span class="dot"></span>
+      <span>GaitMind</span>
+    </a>
+    <div class="nav__links">
+      <a href="index.html" class="active">Home</a>
+      <a href="analysis.html">Analysis</a>
+      <a href="how-it-works.html">How it works</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <h1>A biomedical AI agent that learns from you</h1>
+    <p>
+      GaitMind combines a multi-step reasoning pipeline with a lightweight
+      cognitive-learning memory. Upload gait data, watch the Planner, Analyzer,
+      and Critic agents collaborate, and teach the system to get better with
+      every piece of feedback.
+    </p>
+    <div class="cta-row">
+      <a class="btn btn--primary" href="analysis.html">Upload gait data →</a>
+      <a class="btn btn--ghost"   href="how-it-works.html">Learn how the AI agent works</a>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="features">
+      <div class="feature">
+        <h3>Multi-agent reasoning</h3>
+        <p>A Planner picks the right modules, an Analyzer crunches the
+           biomechanics, and a Critic challenges the result before you see it.</p>
+      </div>
+      <div class="feature">
+        <h3>Real biomechanics</h3>
+        <p>Step-time variability, Robinson symmetry index, harmonic ratio,
+           cadence — clinically-inspired metrics with transparent formulas.</p>
+      </div>
+      <div class="feature">
+        <h3>Cognitive learning</h3>
+        <p>Mark predictions correct or incorrect and the system adjusts feature
+           weights, thresholds, and memory in real time.</p>
+      </div>
+      <div class="feature">
+        <h3>Reasoning trace</h3>
+        <p>Every decision is shown step-by-step so you can audit how the agent
+           reached its conclusion — no black box.</p>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top: 28px;">
+      <h2>Try it in 30 seconds</h2>
+      <ol class="muted small" style="line-height: 1.9; padding-left: 20px;">
+        <li>Open the <a href="analysis.html">Analysis</a> page.</li>
+        <li>Click <em>Use sample dataset</em> (or upload your own CSV / enter parameters manually).</li>
+        <li>Inspect the reasoning trace and the abnormality meter.</li>
+        <li>Click <em>This is correct</em> or <em>This is incorrect</em> — the
+            memory panel updates instantly.</li>
+      </ol>
+    </section>
+  </main>
+
+  <footer class="footer">
+    GaitMind · Cognitive-Learning Gait-Analysis Agent · College AI Project Demo
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

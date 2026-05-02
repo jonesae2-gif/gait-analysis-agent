@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analysis — GaitMind</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <nav class="nav">
+    <a class="nav__brand" href="index.html">
+      <span class="dot"></span>
+      <span>GaitMind</span>
+    </a>
+    <div class="nav__links">
+      <a href="index.html">Home</a>
+      <a href="analysis.html" class="active">Analysis</a>
+      <a href="how-it-works.html">How it works</a>
+    </div>
+  </nav>
+
+  <main class="container">
+
+    <!-- ============== INPUT CARD ============== -->
+    <section class="card">
+      <h2>1 · Provide gait data</h2>
+
+      <div class="tabs">
+        <button id="tab-csv"    class="active">Upload CSV</button>
+        <button id="tab-manual">Manual parameters</button>
+      </div>
+
+      <!-- CSV mode -->
+      <div id="pane-csv">
+        <div class="upload" id="drop">
+          <input type="file" id="file-input" accept=".csv,.tsv,.txt" hidden>
+          <p><strong>Drag a CSV here</strong> or
+             <a href="#" id="pick-file">browse</a>.</p>
+          <p class="filename" id="file-name">No file selected</p>
+          <p class="muted small">
+            Expected columns (any subset): <code>time</code>, <code>accel_z</code>,
+            <code>gyro_z</code>, <code>step_interval</code>,
+            <code>left_step_time</code>, <code>right_step_time</code>.
+          </p>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;">
+          <button class="btn btn--primary" id="run-csv">Analyze CSV</button>
+          <button class="btn btn--ghost"   id="use-sample">Use sample dataset</button>
+          <a class="btn btn--ghost" href="/api/sample-csv" download>Download sample</a>
+        </div>
+      </div>
+
+      <!-- Manual mode -->
+      <div id="pane-manual" class="hidden">
+        <div class="field-row">
+          <div class="field">
+            <label for="m-var">Step-time variability (% CV)</label>
+            <input id="m-var" type="number" step="0.1" placeholder="e.g. 2.4">
+          </div>
+          <div class="field">
+            <label for="m-stride">Stride length (m)</label>
+            <input id="m-stride" type="number" step="0.01" placeholder="e.g. 1.42">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="m-cad">Cadence (steps/min)</label>
+            <input id="m-cad" type="number" step="0.1" placeholder="e.g. 110">
+          </div>
+          <div class="field">
+            <label for="m-sym">Symmetry index (%)</label>
+            <input id="m-sym" type="number" step="0.1" placeholder="e.g. 2.0">
+          </div>
+        </div>
+        <div class="field">
+          <label for="m-hr">Harmonic ratio (optional)</label>
+          <input id="m-hr" type="number" step="0.1" placeholder="e.g. 2.5">
+        </div>
+        <button class="btn btn--primary" id="run-manual">Analyze parameters</button>
+      </div>
+    </section>
+
+    <!-- ============== RESULTS ============== -->
+    <section id="results" class="hidden">
+
+      <div class="card">
+        <h2>2 · Abnormality score</h2>
+        <div class="score">
+          <div>
+            <div class="score__bar"><div class="score__fill" id="score-fill"></div></div>
+            <div style="margin-top:10px;">
+              <span class="label-pill" id="label-pill">—</span>
+              <span class="muted small" id="confidence-text"></span>
+              <span class="muted small" id="threshold-text"></span>
+            </div>
+          </div>
+          <div class="score__num" id="score-num">0</div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <h2>3 · Visualizations</h2>
+          <h3>Vertical acceleration / step intervals</h3>
+          <canvas id="chart-signal" height="160"></canvas>
+          <h3>Per-feature contribution</h3>
+          <canvas id="chart-contrib" height="160"></canvas>
+          <h3>Left vs right step time</h3>
+          <canvas id="chart-symmetry" height="120"></canvas>
+        </div>
+
+        <div class="card">
+          <h2>4 · Agent reasoning trace</h2>
+          <div id="trace" class="trace"></div>
+
+          <h3 style="margin-top:18px;">Final explanation</h3>
+          <p id="final-explanation" class="small"></p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>5 · Was this assessment correct?</h2>
+        <p class="muted small">
+          Your feedback updates the agent's feature weights and abnormality
+          threshold. The change is shown in the memory panel below.
+        </p>
+        <div class="feedback">
+          <button class="btn btn--good" id="fb-correct">✓ This is correct</button>
+          <button class="btn btn--bad"  id="fb-wrong-normal">✗ Wrong — actually normal</button>
+          <button class="btn btn--bad"  id="fb-wrong-abnormal">✗ Wrong — actually abnormal</button>
+          <span class="feedback__status" id="fb-status"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============== MEMORY ============== -->
+    <section class="card">
+      <h2>Cognitive memory</h2>
+      <p class="muted small">
+        These weights are persisted to <code>memory.json</code> on the server
+        and used by the Analyzer for every future prediction. The threshold
+        decides where the score crosses from NORMAL to ABNORMAL.
+      </p>
+      <h3>Feature weights</h3>
+      <div class="weights" id="weights"></div>
+
+      <h3>Threshold &amp; statistics</h3>
+      <dl class="kv" id="memory-stats"></dl>
+
+      <div style="margin-top:14px;">
+        <button class="btn btn--ghost" id="reset-memory">Reset memory</button>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    GaitMind · Cognitive-Learning Gait-Analysis Agent
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/analysis.js"></script>
+</body>
+</html>

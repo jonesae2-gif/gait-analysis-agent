@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How it works — GaitMind</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <nav class="nav">
+    <a class="nav__brand" href="index.html">
+      <span class="dot"></span>
+      <span>GaitMind</span>
+    </a>
+    <div class="nav__links">
+      <a href="index.html">Home</a>
+      <a href="analysis.html">Analysis</a>
+      <a href="how-it-works.html" class="active">How it works</a>
+    </div>
+  </nav>
+
+  <main class="container">
+
+    <section class="card">
+      <h2>Agent architecture</h2>
+      <p class="small">
+        GaitMind orchestrates three specialized agents that pass structured
+        messages to each other. The pipeline is deterministic, so it can run
+        without an external LLM, but every agent exposes a clean interface so
+        a real LLM call can be dropped in at any layer.
+      </p>
+
+      <div class="flow">
+        <div class="flow__node planner">
+          <h4>1 · Planner</h4>
+          <p class="small muted">
+            Reads the request shape (CSV columns or manual fields) and emits a
+            plan: which analysis modules to run, in what order, and why.
+          </p>
+        </div>
+        <div class="flow__node analyzer">
+          <h4>2 · Analyzer</h4>
+          <p class="small muted">
+            Executes the plan. Computes variability, symmetry, harmonic ratio,
+            and cadence; combines them with memory-driven weights into a 0–100
+            abnormality score.
+          </p>
+        </div>
+        <div class="flow__node critic">
+          <h4>3 · Critic</h4>
+          <p class="small muted">
+            Reviews the Analyzer's reasoning, flags borderline scores,
+            sparse-data warnings, and conflicts between strong individual
+            features and the overall label, then writes the final explanation.
+          </p>
+        </div>
+      </div>
+
+      <div class="callout">
+        Every agent's intermediate output is shown verbatim in the
+        <strong>reasoning trace</strong> on the Analysis page — there is no
+        hidden state.
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Cognitive learning loop</h2>
+      <p class="small">
+        The system maintains a JSON memory file that captures three things:
+        feature weights, dynamic thresholds, and a tally of which features have
+        historically correlated with each user-confirmed label.
+      </p>
+
+      <h3>What changes on feedback</h3>
+      <div class="kv small">
+        <dt>False positive (we said abnormal, you say normal)</dt>
+        <dd>Down-weight the loudest contributing features; raise the
+            abnormality cutoff slightly.</dd>
+        <dt>False negative (we said normal, you say abnormal)</dt>
+        <dd>Up-weight the elevated features; lower the cutoff slightly.</dd>
+        <dt>Agreement</dt>
+        <dd>No weight change, but the agreement counter ticks up so confidence
+            in the system's calibration grows.</dd>
+        <dt>Always</dt>
+        <dd>Increment the per-feature, per-label correlation tally — the Critic
+            uses this to add experiential context to future predictions.</dd>
+      </div>
+
+      <p class="small muted" style="margin-top:14px;">
+        Updates use a small learning rate (Δ ≈ 0.10 × contribution) and weights
+        are clamped to <code>[0.1, 3.0]</code> so the system can't run away
+        after one bad example. Think of it as a hand-rolled, interpretable
+        cousin of an online gradient update.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Gait biomechanics, briefly</h2>
+      <h3>Step-time variability</h3>
+      <p class="small">
+        The coefficient of variation of consecutive step intervals. Healthy
+        adults are typically below ~3% CV; values above ~10% are associated
+        with elevated fall risk in older adults.
+      </p>
+      <h3>Robinson symmetry index</h3>
+      <p class="small">
+        <code>SI = |L − R| / (½(L + R)) × 100</code>. A perfectly symmetric
+        walker scores 0%; values above ~15% are commonly seen with
+        post-stroke hemiparesis or unilateral pain.
+      </p>
+      <h3>Harmonic ratio</h3>
+      <p class="small">
+        Computed from the FFT of vertical acceleration: the ratio of
+        even-harmonic to odd-harmonic power. Higher values mean a smoother,
+        more periodic gait pattern.
+      </p>
+      <h3>Cadence</h3>
+      <p class="small">
+        Steps per minute, derived from the average inter-step interval. A
+        typical adult walks at 95–125 steps/min; values well outside that
+        band can indicate compensation or pathology.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Limitations &amp; ethics</h2>
+      <p class="small">
+        GaitMind is a teaching demo, not a medical device. The reference
+        ranges are simplified; real clinical assessments require
+        instrumented walkways, multiple trials, and expert interpretation.
+        The cognitive-learning memory is shared across all users on a given
+        deployment — production use would require per-user partitioning,
+        access controls, and audit logging.
+      </p>
+      <p class="small">
+        Bias risk: if the only feedback the system ever receives comes from
+        one demographic (e.g. healthy young adults), its weights and threshold
+        will drift toward that population's norms. We recommend resetting
+        memory before any new study and surfacing the agreement/disagreement
+        counters to anyone interpreting results.
+      </p>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    GaitMind · Cognitive-Learning Gait-Analysis Agent
+  </footer>
+</body>
+</html>
